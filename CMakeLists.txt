@@ -3,5 +3,11 @@ project(parser)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(CommandLineParser      main.cc src/commandline_parser.cc)
-add_executable(CommandLineParser_test src/commandline_parser.cc test/test.cc)
+set(SOURCE_FILES
+    src/commandline_parser.cc
+    src/usage_generator.cc
+)
+
+add_executable(parser           main.cc                 ${SOURCE_FILES})
+add_executable(parser_test      test/parser_test.cc     ${SOURCE_FILES})
+add_executable(generator_test   test/generator_test.cc  ${SOURCE_FILES})

@@ -14,7 +14,7 @@ const char *usage[] = {
         "4) Verify an option by calling has(),has_or(),has_and()",
         "5) To get a value from specified option by calling get() and then as<T>().",
         "",
-        "For more details and examples, see test/test.cc",
+        "For more details and examples, see test/*.cc",
         nullptr
 };
 
