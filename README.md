@@ -29,6 +29,7 @@ parser.has("option")
 // verify a sequence of options
 parser.has_or(2, "x", "y");
 parser.has_and(2, "option", "c");
+parser.has_and(1, "-xy");
 ```
 
 For more details and examples, see test/test.cc

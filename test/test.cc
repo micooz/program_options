@@ -34,6 +34,7 @@ int main() {
     cout << parser.has("t") << endl;
     cout << parser.has("option") << endl;
     cout << parser.has("3") << endl;
+    cout << parser.has("-yxz") << endl;
   }
   cout << endl;
   {
@@ -42,6 +43,7 @@ int main() {
     cout << parser.has_and(3, "x", "y", "option") << endl;
     cout << parser.has_and(2, "a", "x") << endl;
     cout << parser.has_or(2, "a", "x") << endl;
+    cout << parser.has_or(2, "xy", "z") << endl;
   }
   cout << endl;
 
