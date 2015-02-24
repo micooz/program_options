@@ -14,6 +14,23 @@ It's easy to check whether an option exist, and get value with a specified type.
 4. Verify an option by calling has(),has_or(),has_and().
 5. To get a value from specified option by calling get() and then as<T>().
 
+```cpp
+// $ path/to/program -xyz 3.14 --option value
+CParser parser;
+parser.parse(argc, argv);
+
+// to get a value from an option
+parser.get("z")->as<double>();
+parser.get("option")->val(); // std::string
+
+// verify an option
+parser.has("option")
+
+// verify a sequence of options
+parser.has_or(2, "x", "y");
+parser.has_and(2, "option", "c");
+```
+
 For more details and examples, see test/test.cc
 
 # TODOs
@@ -33,6 +50,8 @@ cout << help << endl;
 
 then we get:
 
-> Usage for xxx:
-> -h [ --help ] description to the option
-> -o [ --option ] arg=default description
+```
+Usage for xxx:
+-h [ --help ] description to the option
+-o [ --option ] arg=default description
+```
