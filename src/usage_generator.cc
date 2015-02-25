@@ -28,6 +28,8 @@ Generator& Generator::operator()(const char* option, const char* default_value,
 }
 
 std::ostream& operator<<(std::ostream& out, const Generator& generator) {
+  out << generator.first_line_ << std::endl;
+
   auto begin = generator.chain_.begin();
   auto end = generator.chain_.end();
 
