@@ -31,14 +31,19 @@ class Generator {
 
   Generator& operator()(const char* option, const char* description);
 
-  Generator& SetDefault(const char* value);
+  Generator& operator()(const char* option, const char* default_value,
+                        const char* description);
 
  private:
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const Generator& generator);
+
+  void add_usage_line(const char* option, const char* default_value,
+                      const char* description);
+
   const char kDelimeter = ',';
   const char* first_line_;
   std::vector<Row> chain_;
-
-  friend std::ostream& operator<<(std::ostream& out, const Generator& generator);
 };
 
 }

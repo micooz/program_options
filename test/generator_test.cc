@@ -11,7 +11,7 @@ int main() {
           ("o,option", "this is an option")
           (",option-2", "this is the option 2")
           ("c,", "this is option c")
-          ("p,position", "position of a place").SetDefault("0.0");
+          ("p,position", "0.0", "position of a place");
 
   cout << generator;
 

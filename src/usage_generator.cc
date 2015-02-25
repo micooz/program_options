@@ -15,30 +15,13 @@ Generator& Generator::MakeUsage(const char* first_line) {
 }
 
 Generator& Generator::operator()(const char* option, const char* description) {
-  std::string option_str(option);
-  auto delimeter_pos = option_str.find(kDelimeter);
-
-  std::string option_short;
-  std::string option_long;
-
-  if (delimeter_pos != std::string::npos) {
-    option_short.assign(std::move(option_str.substr(0, delimeter_pos)));
-    option_long.assign(std::move(option_str.substr(delimeter_pos + 1)));
-  }
-
-  Generator::Row row;
-  row.option_short = option_short;
-  row.option_long = option_long;
-  row.description = std::string(description);
-
-  chain_.push_back(row);
-
+  this->add_usage_line(option, "", description);
   return *this;
 }
 
-Generator& Generator::SetDefault(const char* value) {
-  auto last_one = chain_.end() - 1;
-  last_one->default_value = std::string(value);
+Generator& Generator::operator()(const char* option, const char* default_value,
+                                 const char* description) {
+  this->add_usage_line(option, default_value, description);
   return *this;
 }
 
@@ -57,16 +40,37 @@ std::ostream& operator<<(std::ostream& out, const Generator& generator) {
       else
         out << "--" << row.option_long << " ";
     }
-    out << "arg ";
 
     if (!row.default_value.empty()) {
-      out << "= " << row.default_value << " ";
+      out << "arg = " << row.default_value << " ";
     }
 
     out << row.description << std::endl;
   });
 
   return out;
+}
+
+void Generator::add_usage_line(const char* option, const char* default_value,
+                               const char* description) {
+  std::string option_str(option);
+  auto delimeter_pos = option_str.find(kDelimeter);
+
+  std::string option_short;
+  std::string option_long;
+
+  if (delimeter_pos != std::string::npos) {
+    option_short.assign(std::move(option_str.substr(0, delimeter_pos)));
+    option_long.assign(std::move(option_str.substr(delimeter_pos + 1)));
+  }
+
+  Generator::Row row;
+  row.option_short = option_short;
+  row.option_long = option_long;
+  row.default_value = std::string(default_value);
+  row.description = std::string(description);
+
+  chain_.push_back(row);
 }
 
 }
