@@ -1,4 +1,5 @@
 #include "usage_generator.h"
+#include <sstream>
 
 namespace parser
 {
@@ -21,7 +22,8 @@ Generator& Generator::operator()(const char* option, const char* description) {
 
 Generator& Generator::operator()(const char* option, const char* default_value,
                                  const char* description) {
-  this->add_usage_line(option, default_value, description);
+  auto row = this->add_usage_line(option, default_value, description);
+  row->require_value = true;
   return *this;
 }
 
@@ -29,30 +31,62 @@ std::ostream& operator<<(std::ostream& out, const Generator& generator) {
   auto begin = generator.chain_.begin();
   auto end = generator.chain_.end();
 
-  std::for_each(begin, end, [&out](const Generator::Row& row) {
-    out << "  ";
+  std::vector<std::stringstream> row_list;
+  row_list.reserve(generator.chain_.size());
+
+  // build usage rows without description field,
+  // find the max-len row at the same time.
+  size_t max_len = 0;
+  std::for_each(begin, end, [&max_len, &row_list](const Generator::Row& row) {
+    std::stringstream ss;
+    ss << "  ";
     if (!row.option_short.empty()) {
-      out << "-" << row.option_short << " ";
+      ss << "-" << row.option_short << " ";
     }
     if (!row.option_long.empty()) {
       if (!row.option_short.empty())
-        out << "[ --" << row.option_long << " ] ";
+        ss << "[ --" << row.option_long << " ] ";
       else
-        out << "--" << row.option_long << " ";
+        ss << "--" << row.option_long << " ";
     }
 
-    if (!row.default_value.empty()) {
-      out << "arg = " << row.default_value << " ";
+    if (row.require_value) {
+      ss << "arg ";
+      if (!row.default_value.empty()) {
+        ss << "= " << row.default_value << " ";
+      }
     }
 
-    out << row.description << std::endl;
+    max_len = std::max(max_len, ss.str().size());
+    row_list.push_back(std::move(ss));
   });
+
+  // show all rows and align description field
+  size_t row_count = generator.chain_.size();
+  for (size_t i = 0; i < row_count; ++i) {
+    std::string str_row(std::move(row_list[i].str()));
+    // print row without description
+    out << str_row;
+    // print spaces
+    size_t spaces = 0;
+    size_t len = str_row.size();
+    if (max_len > len)
+      spaces = max_len - len;
+
+    while (spaces--) {
+      out << " ";
+    }
+    // print description
+    out << generator.chain_[i].description << std::endl;
+  }
 
   return out;
 }
 
-void Generator::add_usage_line(const char* option, const char* default_value,
-                               const char* description) {
+std::vector<Generator::Row>::iterator Generator::add_usage_line(
+        const char* option,
+        const char* default_value,
+        const char* description) {
   std::string option_str(option);
   auto delimeter_pos = option_str.find(kDelimeter);
 
@@ -71,6 +105,7 @@ void Generator::add_usage_line(const char* option, const char* default_value,
   row.description = std::string(description);
 
   chain_.push_back(row);
+  return chain_.end() - 1;
 }
 
 }

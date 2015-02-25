@@ -23,6 +23,7 @@ class Generator {
     std::string option_long;
     std::string default_value;
     std::string description;
+    bool require_value;
   };
 
   Generator();
@@ -38,8 +39,9 @@ class Generator {
   friend std::ostream& operator<<(std::ostream& out,
                                   const Generator& generator);
 
-  void add_usage_line(const char* option, const char* default_value,
-                      const char* description);
+  std::vector<Row>::iterator add_usage_line(const char* option,
+                                            const char* default_value,
+                                            const char* description);
 
   const char kDelimeter = ',';
   const char* first_line_;
