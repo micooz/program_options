@@ -1,6 +1,6 @@
 # CommandLine Parser
 
-CommandLine Parser can be used for parsing command line as well as generate usage information automaticlly.
+CommandLine Parser can be used for parsing command line as well as generate usage information automatically.
 
 It stores options and values into a map.
 
@@ -40,6 +40,7 @@ parser.has_or(2, "x", "y");
 parser.has_and(2, "option", "c");
 parser.has_and(1, "-xy");
 ```
+
 For more details and examples, check out `test/parser_test.cc`
 
 ### usage generator
@@ -54,7 +55,7 @@ For more details and examples, check out `test/parser_test.cc`
 Generator generator;
 
 generator.MakeUsage("Usage for example:")
-      ("h,help", "show help imformation")
+      ("h,help", "show help information")
       ("o,option", "", "this is an option")
       (",option-2", "this is the option 2")
       ("c,", "this is option c")
@@ -64,17 +65,18 @@ cout << generator;
 
 /*
 Usage for example:
-  -h [ --help ]               show help imformation
+  -h [ --help ]               show help information
   -o [ --option ] arg         this is an option
   --option-2                  this is the option 2
   -c                          this is option c
   -p [ --position ] arg = 0.0 position of a place
 */
 ```
+
 Note: 
 
 * The first parameter's format: `short-form,long-form`, You can set any one of them or both.
-* If you don't require a value of an option, needn`t to set the second parameter inside the parentheses, and the **arg** will not be displayed. Otherwise, set it.
+* If you don't require a value of an option, you don't need to set the second parameter inside the parentheses, and the **arg** will not be displayed. Otherwise, set it.
 
 # TODOs
 
@@ -100,4 +102,5 @@ parser.has_or(2, "o", "option");
 if (parser.has("o") || parser.has("option"))
   ...
 ```
+
  it's unfriendly to users.
