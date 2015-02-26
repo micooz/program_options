@@ -1,5 +1,4 @@
 #include "commandline_parser.h"
-#include <iostream>
 
 using namespace std;
 
@@ -8,12 +7,12 @@ namespace parser
 
 // class OptionError
 
-OptionError::OptionError(const string &msg)
+OptionError::OptionError(const string& msg)
         : _msg(msg) {
 
 }
 
-const char *OptionError::what() const throw() {
+const char* OptionError::what() const throw() {
   string msg;
   msg.append("Command line parse error: ").append(_msg).push_back('.');
   return msg.c_str();
@@ -26,12 +25,12 @@ OptionError::~OptionError() throw() {
 
 // class CCParseItem
 
-CParseItem::CParseItem(const string &val)
+CParseItem::CParseItem(const string& val)
         : _val(val) {
 
 }
 
-CParseItem *CParser::get(const string &key) {
+CParseItem* CParser::get(const string& key) {
   if (pr_->find(key) != pr_->end()) {
     return (*pr_)[key];
   }
@@ -46,7 +45,7 @@ string CParseItem::val() const {
 // class CParser
 
 CParser::CParser()
-        : pr_(nullptr) {
+        : pr_(nullptr), chain_(nullptr) {
 
 }
 
@@ -54,7 +53,7 @@ CParser::~CParser() {
   this->cleanup();
 }
 
-CParser::ParseResult *CParser::parse(const int argc, const char **argv) {
+CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
   argc_ = argc;
   argv_ = argv;
   this->init();
@@ -139,13 +138,17 @@ CParser::ParseResult *CParser::parse(const int argc, const char **argv) {
     previous = block;
   }// for
 
+  if (chain_) {
+    this->set_addition();
+  }
+
   return pr_;
 }
 
-bool CParser::has(const char *key) {
+bool CParser::has(const char* key) {
   string skey(key);
 
-  if (pr_ && !skey.empty()) {
+  if (pr_ && !pr_->empty() && !skey.empty()) {
     if (skey[0] == '-') {
       //check combination options, e.g., CParser::has("-xyz")
       for (size_t i = 1; i < skey.size(); ++i) {
@@ -168,7 +171,7 @@ bool CParser::has_or(int n, ...) {
   va_list keys;
   va_start(keys, n);
   while (n--) {
-    const char *key = va_arg(keys, const char *);
+    const char* key = va_arg(keys, const char *);
     if (this->has(key)) {
       return true;
     }
@@ -181,7 +184,7 @@ bool CParser::has_and(int n, ...) {
   va_list keys;
   va_start(keys, n);
   while (n--) {
-    const char *key = va_arg(keys, const char *);
+    const char* key = va_arg(keys, const char *);
     if (!this->has(key)) {
       return false;
     }
@@ -225,13 +228,74 @@ void CParser::cleanup() {
     auto iend = pr_->end();
     auto it = ibegin;
     for (; it != iend; ++it) {
-      CParseItem *item = it->second;
+      CParseItem* item = it->second;
       if (item)
         delete item;
     }
     delete pr_;
     pr_ = nullptr;
   }
+}
+
+void CParser::set_addition() {
+  auto begin = chain_->begin();
+  auto end = chain_->end();
+
+  std::for_each(begin, end, [this](const Generator::Row& row) {
+    // assume both -o and --option are allowed,
+    // but only provide -o,
+    // then set the another --option.
+    // vice versa.
+    const string& def = row.default_value;
+    const string& ops = row.option_short;
+    const string& opl = row.option_long;
+    ParseResult& pr = *pr_;
+
+    bool has_short = this->has(ops.c_str());
+    bool has_long = this->has(opl.c_str());
+
+    // assume -o [ --option ] arg = 1
+    // but not provide option value,
+    // then set to default 1.
+    // otherwise, both set to user defined value
+
+    if (!ops.empty()) {
+      if (has_short) {
+        if (pr[ops] != nullptr && !opl.empty()) {
+          pr[opl] = new CParseItem(std::move(pr[ops]->val()));
+        } else if (pr[ops] == nullptr && !def.empty()) {
+          pr[ops] = new CParseItem(std::move(def));
+          if (!opl.empty())
+            pr[opl] = new CParseItem(std::move(def));
+        } else {
+          pr[opl] = nullptr;
+        }
+      }
+    }
+
+    if (!opl.empty()) {
+      if (has_long) {
+        if (pr[opl] != nullptr && !ops.empty()) {
+          pr[ops] = new CParseItem(std::move(pr[opl]->val()));
+        } else if (pr[opl] == nullptr && !def.empty()) {
+          if (!ops.empty())
+            pr[ops] = new CParseItem(std::move(def));
+          pr[opl] = new CParseItem(std::move(def));
+        } else {
+          pr[ops] = nullptr;
+        }
+      }
+    }
+
+    if(!has_long && !has_short && !def.empty()) {
+      if (!opl.empty())
+        pr[opl] = new CParseItem(std::move(def));
+      if (!ops.empty())
+        pr[ops] = new CParseItem(std::move(def));
+    }
+  }
+
+  );
 }
 
 }

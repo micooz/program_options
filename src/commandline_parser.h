@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "usage_generator.h"
 
 namespace parser
 {
@@ -23,9 +24,9 @@ namespace parser
 class OptionError : public std::exception {
  public:
 
-  explicit OptionError(const std::string &msg);
+  explicit OptionError(const std::string& msg);
 
-  const char *what() const throw();
+  const char* what() const throw();
 
   ~OptionError() throw();
 
@@ -38,7 +39,7 @@ class OptionError : public std::exception {
 class CParseItem {
  public:
 
-  explicit CParseItem(const std::string &val);
+  explicit CParseItem(const std::string& val);
 
   /*
    * dynamic type cast, support base data types including std::string
@@ -66,7 +67,7 @@ class CParseItem {
 class CParser {
  public:
   typedef std::vector<std::string> ParameterList;
-  typedef std::map<std::string, CParseItem *> ParseResult;
+  typedef std::map<std::string, CParseItem*> ParseResult;
 
   CParser();
 
@@ -78,12 +79,12 @@ class CParser {
   /*
    * parse the cmd line by given argc and argv
    */
-  ParseResult *parse(const int argc, const char **argv);
+  ParseResult* parse(const int argc, const char** argv);
 
   /*
    * check whether a certain option exist
    */
-  bool has(const char *key);
+  bool has(const char* key);
 
   /*
    * check whether a sequence of options exist
@@ -100,21 +101,29 @@ class CParser {
   /*
    * get the specified option value
    */
-  CParseItem *get(const std::string &key);
+  CParseItem* get(const std::string& key);
 
   /*
    * output all ParseResult
    */
   void dump();
 
+  inline void set_usage_chain(const std::vector<Generator::Row> *chain) {
+    chain_ = chain;
+  }
+
  private:
   void init();
+
   void cleanup();
 
+  void set_addition();
+
+  const char** argv_;
+  const std::vector<Generator::Row> *chain_;
   int argc_;
-  const char **argv_;
   ParameterList args_;
-  ParseResult *pr_;
+  ParseResult* pr_;
 };
 
 }

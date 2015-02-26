@@ -8,6 +8,7 @@ set(SOURCE_FILES
     src/usage_generator.cc
 )
 
-add_executable(parser           main.cc                 ${SOURCE_FILES})
-add_executable(parser_test      test/parser_test.cc     ${SOURCE_FILES})
-add_executable(generator_test   test/generator_test.cc  ${SOURCE_FILES})
+add_executable(parser           main.cc                  ${SOURCE_FILES})
+add_executable(parser_test      test/parser_test.cc      ${SOURCE_FILES})
+add_executable(generator_test   test/generator_test.cc   ${SOURCE_FILES})
+add_executable(combination_test test/combination_test.cc ${SOURCE_FILES})

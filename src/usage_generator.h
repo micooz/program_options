@@ -16,6 +16,8 @@
 namespace parser
 {
 
+class CParser;
+
 class Generator {
  public:
   struct Row {
@@ -28,24 +30,32 @@ class Generator {
 
   Generator();
 
+  ~Generator();
+
   Generator& MakeUsage(const char* first_line);
+
+  CParser* MakeParser();
 
   Generator& operator()(const char* option, const char* description);
 
   Generator& operator()(const char* option, const char* default_value,
                         const char* description);
 
+  inline std::vector<Row>& GetChain() {
+    return chain_;
+  }
+
  private:
   friend std::ostream& operator<<(std::ostream& out,
                                   const Generator& generator);
 
-  std::vector<Row>::iterator add_usage_line(const char* option,
-                                            const char* default_value,
-                                            const char* description);
+  bool add_usage_line(const char* option, const char* default_value,
+                      const char* description);
 
   const char kDelimeter = ',';
   const char* first_line_;
   std::vector<Row> chain_;
+  CParser* parser_;
 };
 
 }

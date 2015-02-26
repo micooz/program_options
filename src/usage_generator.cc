@@ -1,18 +1,36 @@
 #include "usage_generator.h"
 #include <sstream>
+#include "commandline_parser.h"
 
 namespace parser
 {
 
 Generator::Generator()
-        : first_line_(nullptr) {
+        : first_line_(nullptr), parser_(nullptr) {
 
+}
+
+Generator::~Generator() {
+  if (parser_) {
+    delete parser_;
+    parser_ = nullptr;
+  }
 }
 
 Generator& Generator::MakeUsage(const char* first_line) {
   chain_.clear();
   first_line_ = first_line;
   return *this;
+}
+
+CParser* Generator::MakeParser() {
+  if (parser_)
+    delete parser_;
+
+  parser_ = new CParser;
+  parser_->set_usage_chain(&chain_);
+
+  return parser_;
 }
 
 Generator& Generator::operator()(const char* option, const char* description) {
@@ -22,8 +40,11 @@ Generator& Generator::operator()(const char* option, const char* description) {
 
 Generator& Generator::operator()(const char* option, const char* default_value,
                                  const char* description) {
-  auto row = this->add_usage_line(option, default_value, description);
-  row->require_value = true;
+  bool added = this->add_usage_line(option, default_value, description);
+  if (added) {
+    auto last = chain_.end() - 1;
+    last->require_value = true;
+  }
   return *this;
 }
 
@@ -85,7 +106,7 @@ std::ostream& operator<<(std::ostream& out, const Generator& generator) {
   return out;
 }
 
-std::vector<Generator::Row>::iterator Generator::add_usage_line(
+bool Generator::add_usage_line(
         const char* option,
         const char* default_value,
         const char* description) {
@@ -98,16 +119,17 @@ std::vector<Generator::Row>::iterator Generator::add_usage_line(
   if (delimeter_pos != std::string::npos) {
     option_short.assign(std::move(option_str.substr(0, delimeter_pos)));
     option_long.assign(std::move(option_str.substr(delimeter_pos + 1)));
+
+    Generator::Row row;
+    row.option_short = option_short;
+    row.option_long = option_long;
+    row.default_value = std::string(default_value);
+    row.description = std::string(description);
+
+    chain_.push_back(row);
+    return true;
   }
-
-  Generator::Row row;
-  row.option_short = option_short;
-  row.option_long = option_long;
-  row.default_value = std::string(default_value);
-  row.description = std::string(description);
-
-  chain_.push_back(row);
-  return chain_.end() - 1;
+  return false;
 }
 
 }

@@ -10,7 +10,9 @@ int main() {
           ("h,help", "show help imformation")
           ("o,option", "", "this is an option")
           (",option-2", "this is the option 2")
-          ("c,", "this is option c")
+          ("x,", "this is the option x")
+          // invalid option format (no , found), it will be ignored.
+          ("c", "this is option c")
           ("p,position", "0.0", "position of a place");
 
   cout << generator;
