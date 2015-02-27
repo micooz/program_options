@@ -45,7 +45,7 @@ string CParseItem::val() const {
 // class CParser
 
 CParser::CParser()
-        : pr_(nullptr), chain_(nullptr) {
+        : chain_(nullptr), pr_(nullptr) {
 
 }
 
