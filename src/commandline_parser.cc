@@ -227,13 +227,10 @@ bool CParser::has_and(int n, ...) {
 
 void CParser::dump() {
   if (pr_) {
-    auto ibegin = pr_->begin();
-    auto iend = pr_->end();
-    auto it = ibegin;
-    for (; it != iend; ++it) {
-      cout << it->first;
-      if (it->second) {
-        cout << " = " << it->second->val() << endl;
+    for (auto pair : *pr_) {
+      cout << pair.first;
+      if (pair.second) {
+        cout << " = " << pair.second->val() << endl;
       } else {
         cout << " set" << endl;
       }
