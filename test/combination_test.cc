@@ -17,7 +17,7 @@ int main() {
   cout << generator;
 
   CParser* parser = generator.MakeParser();
-  parser->parse("path/to/this -h -ra 10 --green");
+  parser->parse("path/to/this -h -ra 10 --green=0");
   parser->dump();
 
   assert(parser->has("a"));

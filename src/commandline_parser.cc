@@ -87,9 +87,35 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
       default: // >=3
         if (block[0] == '-') {
           if (block[1] == '-') {
-            // a long format option
-            // e.g., ./exec --option
-            (*pr_)[block.substr(2)] = nullptr;
+            size_t pos_equal = block.find('=');
+            if (pos_equal == string::npos) {
+              // a long format option
+              // e.g., ./exec --option
+              (*pr_)[block.substr(2)] = nullptr;
+            } else {
+              if (pos_equal > 3) {
+                // e.g, ./exec --op[..=]value
+                string key(block.substr(2, pos_equal - 2));
+                if (block.size() > 5)
+                  // e.g, ./exec --op=v
+                  (*pr_)[key] = new CParseItem(block.substr(pos_equal + 1));
+                else
+                  (*pr_)[key] = nullptr;
+              } else {
+                // a long format option but = is illegal
+                // e.g., ./exec --o=[...]
+                (*pr_)[block.substr(2)] = nullptr;
+              }
+            }
+          } else if (block[2] == '=') {
+            // a single option with =
+            // e.g., ./exec -o=[...]
+            string key;
+            key.push_back(block[1]);
+            if (block.size() > 3)
+              (*pr_)[key] = new CParseItem(block.substr(3));
+            else
+              (*pr_)[key] = nullptr;
           } else {
             // a combination options
             // e.g., ./exec -ab[...]
@@ -109,7 +135,6 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
 
     if (block[0] != '-' && previous != block //not the first option
             ) {
-
       if (previous[0] != '-') {
         // previous is not an option, error occur
         // e.g., ./exec abc def
@@ -227,6 +252,12 @@ bool CParser::has_and(int n, ...) {
 
 void CParser::dump() {
   if (pr_) {
+    // print command line
+    for (int i = 0; i < argc_; ++i) {
+      cout << args_[i] << " ";
+    }
+    cout << endl;
+    // print map
     for (auto pair : *pr_) {
       cout << pair.first;
       if (pair.second) {
@@ -240,14 +271,16 @@ void CParser::dump() {
 
 bool CParser::init(const int argc, const char** argv) {
   argc_ = argc;
-  argv_ = argv;
+  // argv_ = argv;
+  // don't save it, point to a local var in parse(const char* command_line).
+  // use member var args_ instead.
   if (argc > 0) {
     this->cleanup();
 
     args_.reserve(static_cast<size_t>(argc_));
 
     for (int i = 0; i < argc_; ++i) {
-      args_.push_back(argv_[i]);
+      args_.push_back(argv[i]);
     }
 
     pr_ = new CParser::ParseResult;

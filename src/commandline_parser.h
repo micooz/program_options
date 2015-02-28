@@ -124,7 +124,6 @@ class CParser {
 
   void set_addition();
 
-  const char** argv_;
   const std::vector<Generator::Row> *chain_;
   int argc_;
   ParameterList args_;

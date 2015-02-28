@@ -8,11 +8,12 @@ int main() {
   parser::CParser parser;
 
   cout << "=====> Basic Tests <=====" << endl;
-  const int argc = 11;
-  const char *argv[] = {"path/to/program", "-o", "--option", "-O", "3",
-                        "--option", "value", "-xyz", "3.14", "-O", "33"};
-  parser.parse(argc, argv);
-
+  //const int argc = 11;
+  //const char *argv[] = {"path/to/program", "-o", "--option", "-O", "3",
+  //                      "--option", "value", "-xyz", "3.14", "-O", "33"};
+  //parser.parse(argc, argv);
+  parser.parse(
+          "path/to/program -o --option -O 3 --option=v1,v2 -xyz 3.14 -O=33");
   {
     cout << "# show parse results, ";
     cout << "'set' means the option was set but without value." << endl;
