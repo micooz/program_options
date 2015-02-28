@@ -54,10 +54,9 @@ CParser::~CParser() {
 }
 
 CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
-  argc_ = argc;
-  argv_ = argv;
-  this->init();
-
+  if (!this->init(argc, argv)) {
+    return nullptr;
+  }
   auto ibegin = args_.begin() + 1; // ignore the first cmd name
   auto iend = args_.end();
   auto it = ibegin;
@@ -145,12 +144,11 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
   return pr_;
 }
 
-CParser::ParseResult* CParser::parse(const int argc, const char* command_line) {
+CParser::ParseResult* CParser::parse(const char* command_line) {
   int i = 0;
-  char c;
   string block;
   vector<string> blocks;
-  blocks.reserve(static_cast<size_t>(argc));
+  char c;
   while ((c = command_line[i++]) != '\0') {
     if (c != ' ') {
       block.push_back(c);
@@ -164,13 +162,14 @@ CParser::ParseResult* CParser::parse(const int argc, const char* command_line) {
   if (!block.empty()) {
     blocks.push_back(block);
   }
-  size_t size = blocks.size();
+  size_t size = blocks.size(); // argc
   char** argv = new char* [size];
   i = 0;
   std::for_each(blocks.begin(), blocks.end(), [&argv, &i](const string& b) {
     argv[i++] = const_cast<char*>(b.c_str());
   });
-  auto pr = this->parse(argc, const_cast<const char**>(argv));
+  auto pr = this->parse(static_cast<const int>(size),
+                        const_cast<const char**>(argv));
 
   delete[] argv;
   argv = nullptr;
@@ -242,16 +241,22 @@ void CParser::dump() {
   }
 }
 
-void CParser::init() {
-  this->cleanup();
+bool CParser::init(const int argc, const char** argv) {
+  argc_ = argc;
+  argv_ = argv;
+  if (argc > 0) {
+    this->cleanup();
 
-  args_.reserve(static_cast<size_t>(argc_));
+    args_.reserve(static_cast<size_t>(argc_));
 
-  for (int i = 0; i < argc_; ++i) {
-    args_.push_back(argv_[i]);
+    for (int i = 0; i < argc_; ++i) {
+      args_.push_back(argv_[i]);
+    }
+
+    pr_ = new CParser::ParseResult;
+    return true;
   }
-
-  pr_ = new CParser::ParseResult;
+  return false;
 }
 
 void CParser::cleanup() {

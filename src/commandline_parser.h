@@ -82,9 +82,9 @@ class CParser {
   ParseResult* parse(const int argc, const char** argv);
 
   /*
-   * parse the command line by given argc and command string
+   * parse the command line by given command string
    */
-  ParseResult* parse(const int argc, const char* command_line);
+  ParseResult* parse(const char* command_line);
 
   /*
    * check whether a certain option exist
@@ -118,7 +118,7 @@ class CParser {
   }
 
  private:
-  void init();
+  bool init(const int argc, const char** argv);
 
   void cleanup();
 
