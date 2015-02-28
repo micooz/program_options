@@ -145,6 +145,39 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
   return pr_;
 }
 
+CParser::ParseResult* CParser::parse(const int argc, const char* command_line) {
+  int i = 0;
+  char c;
+  string block;
+  vector<string> blocks;
+  blocks.reserve(static_cast<size_t>(argc));
+  while ((c = command_line[i++]) != '\0') {
+    if (c != ' ') {
+      block.push_back(c);
+    } else {
+      if (!block.empty()) {
+        blocks.push_back(block);
+      }
+      block.clear();
+    }
+  }
+  if (!block.empty()) {
+    blocks.push_back(block);
+  }
+  size_t size = blocks.size();
+  char** argv = new char* [size];
+  i = 0;
+  std::for_each(blocks.begin(), blocks.end(), [&argv, &i](const string& b) {
+    argv[i++] = const_cast<char*>(b.c_str());
+  });
+  auto pr = this->parse(argc, const_cast<const char**>(argv));
+
+  delete[] argv;
+  argv = nullptr;
+
+  return pr;
+}
+
 bool CParser::has(const char* key) {
   string skey(key);
 
@@ -287,7 +320,7 @@ void CParser::set_addition() {
       }
     }
 
-    if(!has_long && !has_short && !def.empty()) {
+    if (!has_long && !has_short && !def.empty()) {
       if (!opl.empty())
         pr[opl] = new CParseItem(std::move(def));
       if (!ops.empty())

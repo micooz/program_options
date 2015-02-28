@@ -14,13 +14,10 @@ int main() {
           ("r,", "255", "color red")
           ("g,green", "color green")
           (",blue", "1", "color blue");
-
   cout << generator;
 
   CParser* parser = generator.MakeParser();
-  const char* argv[] = {
-          "path/to/this", "-h", "-ra", "10", "--green"
-  };
+  const char* argv = "path/to/this -h -ra 10 --green";
   parser->parse(5, argv);
   parser->dump();
 

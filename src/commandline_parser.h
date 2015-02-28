@@ -77,9 +77,14 @@ class CParser {
   ~CParser();
 
   /*
-   * parse the cmd line by given argc and argv
+   * parse the command line by given argc and argv
    */
   ParseResult* parse(const int argc, const char** argv);
+
+  /*
+   * parse the command line by given argc and command string
+   */
+  ParseResult* parse(const int argc, const char* command_line);
 
   /*
    * check whether a certain option exist
