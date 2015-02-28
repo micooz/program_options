@@ -41,6 +41,14 @@ parser.has_and(2, "option", "c");
 parser.has_and(1, "-xy");
 ```
 
+It also supports "=" to assign a value to an option:
+
+```cpp
+// $ path/to/program --option=value1,value2... -c=config.json
+parser->get("option")->val(); // value1,value2...
+parser->get("c")->as<std::string>(); // config.json
+```
+
 For more details and examples, check out `test/parser_test.cc`
 
 ### usage generator
@@ -128,8 +136,4 @@ For more examples, check out `test/combination_test.cc`
 
 # TODOs
 
-Now `Commandline Parser` is very intelligent. And I want it to support "=":
-
-```cpp
-$ path/to/program --option=value
-```
+Nothing to do at the moment. Waiting for your advice.
