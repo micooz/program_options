@@ -2,13 +2,9 @@
 #include <sstream>
 #include "commandline_parser.h"
 
-namespace parser
-{
+namespace parser {
 
-Generator::Generator()
-        : first_line_(nullptr), parser_(nullptr) {
-
-}
+Generator::Generator() : first_line_(nullptr), parser_(nullptr) {}
 
 Generator::~Generator() {
   if (parser_) {
@@ -24,8 +20,7 @@ Generator& Generator::MakeUsage(const char* first_line) {
 }
 
 CParser* Generator::MakeParser() {
-  if (parser_)
-    delete parser_;
+  if (parser_) delete parser_;
 
   parser_ = new CParser;
   parser_->set_usage_chain(&chain_);
@@ -93,8 +88,7 @@ std::ostream& operator<<(std::ostream& out, const Generator& generator) {
     // print spaces
     size_t spaces = 0;
     size_t len = str_row.size();
-    if (max_len > len)
-      spaces = max_len - len;
+    if (max_len > len) spaces = max_len - len;
 
     while (spaces--) {
       out << " ";
@@ -106,10 +100,8 @@ std::ostream& operator<<(std::ostream& out, const Generator& generator) {
   return out;
 }
 
-bool Generator::add_usage_line(
-        const char* option,
-        const char* default_value,
-        const char* description) {
+bool Generator::add_usage_line(const char* option, const char* default_value,
+                               const char* description) {
   std::string option_str(option);
   auto delimeter_pos = option_str.find(kDelimeter);
 
@@ -131,5 +123,4 @@ bool Generator::add_usage_line(
   }
   return false;
 }
-
 }

@@ -16,14 +16,12 @@
 #include <vector>
 #include "usage_generator.h"
 
-namespace parser
-{
+namespace parser {
 
 // class OptionError
 
 class OptionError : public std::exception {
  public:
-
   explicit OptionError(const std::string& msg);
 
   const char* what() const throw();
@@ -38,13 +36,12 @@ class OptionError : public std::exception {
 
 class CParseItem {
  public:
-
   explicit CParseItem(const std::string& val);
 
   /*
    * dynamic type cast, support base data types including std::string
    */
-  template<typename T>
+  template <typename T>
   T as() {
     T r;
     std::stringstream buf;
@@ -113,7 +110,7 @@ class CParser {
    */
   void dump();
 
-  inline void set_usage_chain(const std::vector<Generator::Row> *chain) {
+  inline void set_usage_chain(const std::vector<Generator::Row>* chain) {
     chain_ = chain;
   }
 
@@ -124,12 +121,11 @@ class CParser {
 
   void set_addition();
 
-  const std::vector<Generator::Row> *chain_;
+  const std::vector<Generator::Row>* chain_;
   int argc_;
   ParameterList args_;
   ParseResult* pr_;
 };
-
 }
 
-#endif // COMMANDLINE_PARSER_H_
+#endif  // COMMANDLINE_PARSER_H_

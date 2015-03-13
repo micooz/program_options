@@ -13,8 +13,7 @@
 #include <vector>
 #include <string>
 
-namespace parser
-{
+namespace parser {
 
 class CParser;
 
@@ -41,9 +40,7 @@ class Generator {
   Generator& operator()(const char* option, const char* default_value,
                         const char* description);
 
-  inline std::vector<Row>& GetChain() {
-    return chain_;
-  }
+  inline std::vector<Row>& GetChain() { return chain_; }
 
  private:
   friend std::ostream& operator<<(std::ostream& out,
@@ -57,7 +54,6 @@ class Generator {
   std::vector<Row> chain_;
   CParser* parser_;
 };
-
 }
 
-#endif // USAGE_GENERATOR_H_
+#endif  // USAGE_GENERATOR_H_
