@@ -206,29 +206,17 @@ bool CParser::has(const char* key) {
   return false;
 }
 
-bool CParser::has_or(int n, ...) {
-  va_list keys;
-  va_start(keys, n);
-  while (n--) {
-    const char* key = va_arg(keys, const char*);
-    if (this->has(key)) {
-      return true;
-    }
+bool CParser::has_or(std::initializer_list<const char*> options) {
+  for (auto key : options) {
+    if (this->has(key)) return true;
   }
-  va_end(keys);
   return false;
 }
 
-bool CParser::has_and(int n, ...) {
-  va_list keys;
-  va_start(keys, n);
-  while (n--) {
-    const char* key = va_arg(keys, const char*);
-    if (!this->has(key)) {
-      return false;
-    }
+bool CParser::has_and(std::initializer_list<const char*> options) {
+  for (auto key : options) {
+    if (!this->has(key)) return false;
   }
-  va_end(keys);
   return true;
 }
 
@@ -335,6 +323,6 @@ void CParser::set_addition() {
       if (!opl.empty()) pr[opl] = new CParseItem(std::move(def));
       if (!ops.empty()) pr[ops] = new CParseItem(std::move(def));
     }
-  } // for
+  }  // for
 }
 }

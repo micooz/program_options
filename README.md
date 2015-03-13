@@ -35,10 +35,15 @@ parser.get("option")->val(); // std::string
 // verify an option
 parser.has("option")
 
-// verify a sequence of options
+// verify a sequence of options (deprecated)
 parser.has_or(2, "x", "y");
 parser.has_and(2, "option", "c");
 parser.has_and(1, "-xy");
+
+// more simple way
+parser.has_or({"x", "y"});
+parser.has_and({"option", "c"});
+parser.has_and({"-xy"});
 ```
 
 It also supports "=" to assign a value to an option:

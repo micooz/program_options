@@ -9,12 +9,19 @@
 #ifndef COMMANDLINE_PARSER_H_
 #define COMMANDLINE_PARSER_H_
 
+#include <initializer_list>
 #include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include "usage_generator.h"
+
+#ifdef __GNUC__
+#define DEPRECATED(func) func __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED(func) __declspec(deprecated) func
+#endif
 
 namespace parser {
 
@@ -92,13 +99,47 @@ class CParser {
    * check whether a sequence of options exist
    * example: has_or(3, "he", "or", "she");
    */
-  bool has_or(int n, ...);
+  DEPRECATED(bool has_or(int n, ...)) {
+    va_list keys;
+    va_start(keys, n);
+    while (n--) {
+      const char* key = va_arg(keys, const char*);
+      if (this->has(key)) {
+        return true;
+      }
+    }
+    va_end(keys);
+    return false;
+  }
 
   /*
    * check whether a sequence of options exist
    * example: has_and(3, "he", "and", "she");
    */
-  bool has_and(int n, ...);
+  DEPRECATED(bool has_and(int n, ...)) {
+    va_list keys;
+    va_start(keys, n);
+    while (n--) {
+      const char* key = va_arg(keys, const char*);
+      if (!this->has(key)) {
+        return false;
+      }
+    }
+    va_end(keys);
+    return true;
+  }
+
+  /*
+   * check whether a sequence of options exist using std::initializer_list
+   * example: has_or({"he", "or", "she"});
+   */
+  bool has_or(std::initializer_list<const char*> options);
+
+  /*
+   * check whether a sequence of options exist using std::initializer_list
+   * example: has_and({"he", "and", "she"});
+   */
+  bool has_and(std::initializer_list<const char*> options);
 
   /*
    * get the specified option value

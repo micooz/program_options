@@ -41,10 +41,17 @@ int main() {
   {
     cout << "# verify whether a sequence of option exist." << endl;
 
-    cout << parser.has_and(3, "x", "y", "option") << endl;
-    cout << parser.has_and(2, "a", "x") << endl;
-    cout << parser.has_or(2, "a", "x") << endl;
-    cout << parser.has_or(2, "xy", "z") << endl;
+    // 'has_or' and 'has_and' are deprecated,
+    // use std::initializer_list instead.
+    // cout << parser.has_and(3, "x", "y", "option") << endl;
+    // cout << parser.has_and(2, "a", "x") << endl;
+    // cout << parser.has_or(2, "a", "x") << endl;
+    // cout << parser.has_or(2, "xy", "z") << endl;
+
+    cout << parser.has_and({"x", "y", "option"}) << endl;
+    cout << parser.has_and({"a", "x"}) << endl;
+    cout << parser.has_or({"a", "x"}) << endl;
+    cout << parser.has_or({"xy", "z"}) << endl;
   }
   cout << endl;
 
