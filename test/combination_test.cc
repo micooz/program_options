@@ -1,10 +1,10 @@
 #include <assert.h>
 #include <iostream>
-#include "../src/usage_generator.h"
-#include "../src/commandline_parser.h"
+#include "generator/generator.h"
+#include "parser/parser.h"
 
 using namespace std;
-using namespace parser;
+using namespace program_options;
 
 int main() {
   Generator generator;
@@ -16,7 +16,7 @@ int main() {
           (",blue", "1", "color blue");
   cout << generator;
 
-  CParser* parser = generator.MakeParser();
+  Parser* parser = generator.MakeParser();
   parser->parse("path/to/this -h -ra 10 --green=0");
   parser->dump();
 

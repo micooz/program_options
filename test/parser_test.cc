@@ -1,11 +1,13 @@
 #include <cassert>
 #include <iostream>
-#include "../src/commandline_parser.h"
+#include "parser/parser.h"
+#include "parser/error.h"
 
 using namespace std;
+using namespace program_options;
 
 int main() {
-  parser::CParser parser;
+  Parser parser;
 
   cout << "=====> Basic Tests <=====" << endl;
   // const int argc = 11;
@@ -67,7 +69,7 @@ int main() {
     const char *argv_accuracy[] = {"path/to/program", "-o", "-"};
     try {
       parser.parse(3, argv_accuracy);
-    } catch (const parser::OptionError &err) {
+    } catch (const ParseError &err) {
       cout << err.what() << endl;
     }
   }
@@ -76,7 +78,7 @@ int main() {
     const char *argv_accuracy[] = {"path/to/program", "--"};
     try {
       parser.parse(2, argv_accuracy);
-    } catch (const parser::OptionError &err) {
+    } catch (const ParseError &err) {
       cout << err.what() << endl;
     }
   }
@@ -85,7 +87,7 @@ int main() {
     const char *argv_accuracy[] = {"path/to/program", "abc", "xyz"};
     try {
       parser.parse(3, argv_accuracy);
-    } catch (const parser::OptionError &err) {
+    } catch (const ParseError &err) {
       cout << err.what() << endl;
     }
   }

@@ -1,10 +1,10 @@
 #include <iostream>
-#include "../src/usage_generator.h"
+#include "generator/generator.h"
 
 using namespace std;
 
 int main() {
-  parser::Generator generator;
+  program_options::Generator generator;
 
   generator.MakeUsage("Usage for example:")
           ("h,help", "show help imformation")

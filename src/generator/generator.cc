@@ -1,8 +1,7 @@
-#include "usage_generator.h"
-#include <sstream>
-#include "commandline_parser.h"
+#include "generator/generator.h"
+#include "parser/parser.h"
 
-namespace parser {
+namespace program_options {
 
 Generator::Generator() : first_line_(nullptr), parser_(nullptr) {}
 
@@ -13,34 +12,13 @@ Generator::~Generator() {
   }
 }
 
-Generator& Generator::MakeUsage(const char* first_line) {
-  chain_.clear();
-  first_line_ = first_line;
-  return *this;
-}
-
-CParser* Generator::MakeParser() {
+Parser* Generator::MakeParser() {
   if (parser_) delete parser_;
 
-  parser_ = new CParser;
+  parser_ = new Parser;
   parser_->set_usage_chain(&chain_);
 
   return parser_;
-}
-
-Generator& Generator::operator()(const char* option, const char* description) {
-  this->add_usage_line(option, "", description);
-  return *this;
-}
-
-Generator& Generator::operator()(const char* option, const char* default_value,
-                                 const char* description) {
-  bool added = this->add_usage_line(option, default_value, description);
-  if (added) {
-    auto last = chain_.end() - 1;
-    last->require_value = true;
-  }
-  return *this;
 }
 
 std::ostream& operator<<(std::ostream& out, const Generator& generator) {

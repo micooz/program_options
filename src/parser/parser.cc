@@ -1,41 +1,23 @@
-#include "commandline_parser.h"
+#include "parser/parser.h"
+#include "parser/error.h"
+#include "parser/item.h"
 
 using namespace std;
 
-namespace parser {
+namespace program_options {
 
-// class OptionError
-
-OptionError::OptionError(const string& msg) : _msg(msg) {}
-
-const char* OptionError::what() const throw() {
-  string msg;
-  msg.append("Command line parse error: ").append(_msg).push_back('.');
-  return msg.c_str();
-}
-
-OptionError::~OptionError() throw() {}
-
-// class CCParseItem
-
-CParseItem::CParseItem(const string& val) : _val(val) {}
-
-CParseItem* CParser::get(const string& key) {
+ParseItem* Parser::get(const string& key) {
   if (pr_->find(key) != pr_->end()) {
     return (*pr_)[key];
   }
   return nullptr;
 }
 
-string CParseItem::val() const { return _val; }
+Parser::Parser() : chain_(nullptr), pr_(nullptr) {}
 
-// class CParser
+Parser::~Parser() { this->cleanup(); }
 
-CParser::CParser() : chain_(nullptr), pr_(nullptr) {}
-
-CParser::~CParser() { this->cleanup(); }
-
-CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
+Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
   if (!this->init(argc, argv)) {
     return nullptr;
   }
@@ -52,13 +34,13 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
     switch (block.size()) {
       case 1:
         if (block == "-") {
-          throw OptionError("single '-' is not allowed");
+          throw ParseError("single '-' is not allowed");
         }
         break;
       case 2:
         if (block[0] == '-') {
           if (block[1] == '-') {
-            throw OptionError("option '--' is incomplete");
+            throw ParseError("option '--' is incomplete");
           } else {
             // single option
             // e.g., ./exec -s
@@ -80,7 +62,7 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
                 string key(block.substr(2, pos_equal - 2));
                 if (block.size() > 5)
                   // e.g, ./exec --op=v
-                  (*pr_)[key] = new CParseItem(block.substr(pos_equal + 1));
+                  (*pr_)[key] = new ParseItem(block.substr(pos_equal + 1));
                 else
                   (*pr_)[key] = nullptr;
               } else {
@@ -95,7 +77,7 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
             string key;
             key.push_back(block[1]);
             if (block.size() > 3)
-              (*pr_)[key] = new CParseItem(block.substr(3));
+              (*pr_)[key] = new ParseItem(block.substr(3));
             else
               (*pr_)[key] = nullptr;
           } else {
@@ -120,7 +102,7 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
       if (previous[0] != '-') {
         // previous is not an option, error occur
         // e.g., ./exec abc def
-        throw OptionError("'" + block + "' is not allowed here");
+        throw ParseError("'" + block + "' is not allowed here");
       }
 
       string key;
@@ -137,7 +119,7 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
       }
 
       if (pr_->find(key) != pr_->end()) {
-        (*pr_)[key] = new CParseItem(block);
+        (*pr_)[key] = new ParseItem(block);
       }
     }
 
@@ -151,7 +133,7 @@ CParser::ParseResult* CParser::parse(const int argc, const char** argv) {
   return pr_;
 }
 
-CParser::ParseResult* CParser::parse(const char* command_line) {
+Parser::ParseResult* Parser::parse(const char* command_line) {
   int i = 0;
   string block;
   vector<string> blocks;
@@ -184,12 +166,12 @@ CParser::ParseResult* CParser::parse(const char* command_line) {
   return pr;
 }
 
-bool CParser::has(const char* key) {
+bool Parser::has(const char* key) {
   string skey(key);
 
   if (pr_ && !pr_->empty() && !skey.empty()) {
     if (skey[0] == '-') {
-      // check combination options, e.g., CParser::has("-xyz")
+      // check combination options, e.g., Parser::has("-xyz")
       for (size_t i = 1; i < skey.size(); ++i) {
         string tkey;
         tkey.push_back(skey[i]);
@@ -199,28 +181,28 @@ bool CParser::has(const char* key) {
       }
       return true;
     } else {
-      // check single option, e.g., CParser::has("x")
+      // check single option, e.g., Parser::has("x")
       return pr_->find(skey) != pr_->end();
     }
   }
   return false;
 }
 
-bool CParser::has_or(std::initializer_list<const char*> options) {
+bool Parser::has_or(std::initializer_list<const char*> options) {
   for (auto key : options) {
     if (this->has(key)) return true;
   }
   return false;
 }
 
-bool CParser::has_and(std::initializer_list<const char*> options) {
+bool Parser::has_and(std::initializer_list<const char*> options) {
   for (auto key : options) {
     if (!this->has(key)) return false;
   }
   return true;
 }
 
-void CParser::dump() {
+void Parser::dump() {
   if (pr_) {
     // print command line
     for (int i = 0; i < argc_; ++i) {
@@ -239,7 +221,7 @@ void CParser::dump() {
   }
 }
 
-bool CParser::init(const int argc, const char** argv) {
+bool Parser::init(const int argc, const char** argv) {
   argc_ = argc;
   // argv_ = argv;
   // don't save it, point to a local var in parse(const char* command_line).
@@ -253,20 +235,20 @@ bool CParser::init(const int argc, const char** argv) {
       args_.push_back(argv[i]);
     }
 
-    pr_ = new CParser::ParseResult;
+    pr_ = new Parser::ParseResult;
     return true;
   }
   return false;
 }
 
-void CParser::cleanup() {
+void Parser::cleanup() {
   args_.clear();
   if (pr_) {
     auto ibegin = pr_->begin();
     auto iend = pr_->end();
     auto it = ibegin;
     for (; it != iend; ++it) {
-      CParseItem* item = it->second;
+      ParseItem* item = it->second;
       if (item) delete item;
     }
     delete pr_;
@@ -274,7 +256,7 @@ void CParser::cleanup() {
   }
 }
 
-void CParser::set_addition() {
+void Parser::set_addition() {
   for (const Generator::Row& row : *chain_) {
     // assume both -o and --option are allowed,
     // but only provide -o,
@@ -296,10 +278,10 @@ void CParser::set_addition() {
     if (!ops.empty()) {
       if (has_short) {
         if (pr[ops] != nullptr && !opl.empty()) {
-          pr[opl] = new CParseItem(std::move(pr[ops]->val()));
+          pr[opl] = new ParseItem(std::move(pr[ops]->val()));
         } else if (pr[ops] == nullptr && !def.empty()) {
-          pr[ops] = new CParseItem(std::move(def));
-          if (!opl.empty()) pr[opl] = new CParseItem(std::move(def));
+          pr[ops] = new ParseItem(std::move(def));
+          if (!opl.empty()) pr[opl] = new ParseItem(std::move(def));
         } else {
           pr[opl] = nullptr;
         }
@@ -309,10 +291,10 @@ void CParser::set_addition() {
     if (!opl.empty()) {
       if (has_long) {
         if (pr[opl] != nullptr && !ops.empty()) {
-          pr[ops] = new CParseItem(std::move(pr[opl]->val()));
+          pr[ops] = new ParseItem(std::move(pr[opl]->val()));
         } else if (pr[opl] == nullptr && !def.empty()) {
-          if (!ops.empty()) pr[ops] = new CParseItem(std::move(def));
-          pr[opl] = new CParseItem(std::move(def));
+          if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
+          pr[opl] = new ParseItem(std::move(def));
         } else {
           pr[ops] = nullptr;
         }
@@ -320,8 +302,8 @@ void CParser::set_addition() {
     }
 
     if (!has_long && !has_short && !def.empty()) {
-      if (!opl.empty()) pr[opl] = new CParseItem(std::move(def));
-      if (!ops.empty()) pr[ops] = new CParseItem(std::move(def));
+      if (!opl.empty()) pr[opl] = new ParseItem(std::move(def));
+      if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
     }
   }  // for
 }

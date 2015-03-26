@@ -1,21 +1,18 @@
 /*
-* Command Line Parser
+* Parser
 * (c) Copyright 2015 Micooz
 *
 * Released under the Apache License.
 * See the LICENSE file or
 * http://www.apache.org/licenses/LICENSE-2.0.txt for more information.
 */
-#ifndef COMMANDLINE_PARSER_H_
-#define COMMANDLINE_PARSER_H_
+#ifndef PARSER_PARSER_H_
+#define PARSER_PARSER_H_
 
 #include <initializer_list>
 #include <map>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include "usage_generator.h"
+#include "generator/generator.h"
+#include "parser/item.h"
 
 #ifdef __GNUC__
 #define DEPRECATED(func) func __attribute__((deprecated))
@@ -23,62 +20,19 @@
 #define DEPRECATED(func) __declspec(deprecated) func
 #endif
 
-namespace parser {
+namespace program_options {
 
-// class OptionError
-
-class OptionError : public std::exception {
- public:
-  explicit OptionError(const std::string& msg);
-
-  const char* what() const throw();
-
-  ~OptionError() throw();
-
- private:
-  std::string _msg;
-};
-
-// class CParseItem
-
-class CParseItem {
- public:
-  explicit CParseItem(const std::string& val);
-
-  /*
-   * dynamic type cast, support base data types including std::string
-   */
-  template <typename T>
-  T as() {
-    T r;
-    std::stringstream buf;
-    buf << _val;
-    buf >> r;
-    return r;
-  }
-
-  /*
-   * alias of as<std::string>()
-   */
-  std::string val() const;
-
- private:
-  std::string _val;
-};
-
-// class CommandLineParser
-
-class CParser {
+class Parser {
  public:
   typedef std::vector<std::string> ParameterList;
-  typedef std::map<std::string, CParseItem*> ParseResult;
+  typedef std::map<std::string, ParseItem*> ParseResult;
 
-  CParser();
+  Parser();
 
   /*
   * release memory allocated in parse()
   */
-  ~CParser();
+  ~Parser();
 
   /*
    * parse the command line by given argc and argv
@@ -144,10 +98,10 @@ class CParser {
   /*
    * get the specified option value
    */
-  CParseItem* get(const std::string& key);
+  ParseItem* get(const std::string& key);
 
   /*
-   * output all ParseResult
+   * print all ParseResult
    */
   void dump();
 
@@ -169,4 +123,4 @@ class CParser {
 };
 }
 
-#endif  // COMMANDLINE_PARSER_H_
+#endif // PARSER_PARSER_H_
