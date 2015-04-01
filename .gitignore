@@ -1,3 +1,17 @@
+# CLion
 .idea/
+
+# binary
 bin/
+
+# cmake
+CMakeFiles/
+CMakeScripts/
+CMakeCache.txt
+*.cmake
 *.user
+
+# Xcode
+Debug/
+.build/
+*.xcodeproj
