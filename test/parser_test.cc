@@ -1,96 +1,82 @@
-#include <cassert>
-#include <iostream>
+#include "gtest/gtest.h"
 #include "parser/parser.h"
 #include "parser/error.h"
 
-using namespace std;
 using namespace program_options;
 
-int main() {
+TEST(TestParser, Parsing) {
   Parser parser;
+  EXPECT_THROW(parser.parse("path/to/program -"), ParseError);
+  EXPECT_THROW(parser.parse("path/to/program --"), ParseError);
+  EXPECT_THROW(parser.parse("path/to/program -="), ParseError);
+  EXPECT_THROW(parser.parse("path/to/program -o -"), ParseError);
+  EXPECT_THROW(parser.parse("path/to/program -o --"), ParseError);
+  EXPECT_THROW(parser.parse("path/to/program abc def"), ParseError);
 
-  cout << "=====> Basic Tests <=====" << endl;
-  // const int argc = 11;
-  // const char *argv[] = {"path/to/program", "-o", "--option", "-O", "3",
-  //                      "--option", "value", "-xyz", "3.14", "-O", "33"};
-  // parser.parse(argc, argv);
+  EXPECT_NO_THROW(parser.parse("path/to/program -g"));
+  EXPECT_NO_THROW(parser.parse("path/to/program --g"));
+  EXPECT_NO_THROW(parser.parse("path/to/program -a -b -c"));
+  EXPECT_NO_THROW(parser.parse("path/to/program -abc"));
+  EXPECT_NO_THROW(parser.parse("path/to/program -g-"));
+  EXPECT_NO_THROW(parser.parse("path/to/program --g-"));
+  EXPECT_NO_THROW(parser.parse("path/to/program -g,.%!"));
+  EXPECT_NO_THROW(parser.parse("path/to/program -o="));
+}
+
+TEST(TestParser, Checking) {
+  Parser parser;
+  parser.parse("path/to/program -o --option -a -xyz");
+  EXPECT_TRUE(parser.has("o"));
+  EXPECT_TRUE(parser.has("option"));
+  EXPECT_TRUE(parser.has("-oa"));
+  EXPECT_TRUE(parser.has("y"));
+  EXPECT_TRUE(parser.has("z"));
+  EXPECT_TRUE(parser.has("-zy"));
+  EXPECT_TRUE(parser.has_and({"o", "a"}));
+  EXPECT_TRUE(parser.has_and({"o", "option"}));
+  EXPECT_TRUE(parser.has_or({"o", "k"}));
+
+  EXPECT_FALSE(parser.has(""));
+  EXPECT_FALSE(parser.has("k"));
+  EXPECT_FALSE(parser.has("ok"));
+  EXPECT_FALSE(parser.has_and({"-ao", "k"}));
+  EXPECT_FALSE(parser.has_and({}));
+  EXPECT_FALSE(parser.has_or({}));
+}
+
+TEST(TestParser, Accessing) {
+  Parser parser;
   parser.parse(
-      "path/to/program -o --option -O 3 --option=v1,v2 -xyz 3.14 -O=33");
-  {
-    cout << "# show parse results, ";
-    cout << "'set' means the option was set but without value." << endl;
+      "path/to/program -o 1 --option 2.3 -p=micooz --person=micooz -xyz 30");
+  EXPECT_NE(parser.get("o"), nullptr);
+  EXPECT_NE(parser.get("option"), nullptr);
+  EXPECT_NE(parser.get("p"), nullptr);
+  EXPECT_NE(parser.get("person"), nullptr);
 
-    parser.dump();
-  }
-  cout << endl;
-  {
-    cout << "# get value with specified type." << endl;
+  EXPECT_EQ(parser.get("k"), nullptr);
+  EXPECT_EQ(parser.get("o")->as<int>(), 1);
+  EXPECT_EQ(parser.get("z")->as<int>(), 30);
+  EXPECT_EQ(parser.get("p")->val(), parser.get("person")->as<std::string>());
 
-    cout << parser.get("O")->as<int>() << endl;
-    cout << parser.get("option")->as<string>() << endl;
-    cout << parser.get("z")->as<double>() << endl;
-  }
-  cout << endl;
-  {
-    cout << "# verify whether option exist." << endl;
+  EXPECT_DOUBLE_EQ(parser.get("option")->as<double>(), 2.3);
+  EXPECT_STREQ(parser.get("p")->val().c_str(), "micooz");
+}
 
-    cout << parser.has("t") << endl;
-    cout << parser.has("option") << endl;
-    cout << parser.has("3") << endl;
-    cout << parser.has("-yxz") << endl;
-  }
-  cout << endl;
-  {
-    cout << "# verify whether a sequence of option exist." << endl;
+TEST(TestParser, Overwriting) {
+  Parser parser;
+  parser.parse("path/to/program -o hello -o world");
+  EXPECT_STREQ(parser.get("o")->val().c_str(), "world");
+}
 
-    // 'has_or' and 'has_and' are deprecated,
-    // use std::initializer_list instead.
-    // cout << parser.has_and(3, "x", "y", "option") << endl;
-    // cout << parser.has_and(2, "a", "x") << endl;
-    // cout << parser.has_or(2, "a", "x") << endl;
-    // cout << parser.has_or(2, "xy", "z") << endl;
+TEST(TestParser, Subroutine) {
+  Parser parser;
+  parser.parse("path/to/program subroutine -o 1 -p=q");
+  EXPECT_EQ(parser.get("o")->as<int>(), 1);
+  EXPECT_STREQ(parser.get_subroutine_name().c_str(), "subroutine");
+  EXPECT_STREQ(parser.get("p")->val().c_str(), "q");
+}
 
-    cout << parser.has_and({"x", "y", "option"}) << endl;
-    cout << parser.has_and({"a", "x"}) << endl;
-    cout << parser.has_or({"a", "x"}) << endl;
-    cout << parser.has_or({"xy", "z"}) << endl;
-  }
-  cout << endl;
-
-  cout << "=====> Accuracy Tests <=====" << endl;
-  {
-    cout << "# return nullptr string when option is not exist." << endl;
-    assert(parser.get("happy") == nullptr);
-    assert(parser.get("value") == nullptr);
-    assert(parser.get("option") != nullptr);
-  }
-  cout << endl;
-  {
-    const char *argv_accuracy[] = {"path/to/program", "-o", "-"};
-    try {
-      parser.parse(3, argv_accuracy);
-    } catch (const ParseError &err) {
-      cout << err.what() << endl;
-    }
-  }
-  cout << endl;
-  {
-    const char *argv_accuracy[] = {"path/to/program", "--"};
-    try {
-      parser.parse(2, argv_accuracy);
-    } catch (const ParseError &err) {
-      cout << err.what() << endl;
-    }
-  }
-  cout << endl;
-  {
-    const char *argv_accuracy[] = {"path/to/program", "abc", "xyz"};
-    try {
-      parser.parse(3, argv_accuracy);
-    } catch (const ParseError &err) {
-      cout << err.what() << endl;
-    }
-  }
-
-  return 0;
+int main(int argc, char *argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

@@ -13,5 +13,9 @@ CMakeCache.txt
 
 # Xcode
 Debug/
+Release/
 .build/
 *.xcodeproj
+
+# gtest
+Testing/

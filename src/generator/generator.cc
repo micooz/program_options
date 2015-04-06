@@ -3,78 +3,76 @@
 
 namespace program_options {
 
-Generator::Generator() : first_line_(nullptr), parser_(nullptr) {}
+Generator::Generator() : parser_(nullptr) {}
 
 Generator::~Generator() {
   if (parser_) {
     delete parser_;
     parser_ = nullptr;
   }
+  for (auto it = subroutines_.begin(); it != subroutines_.end(); ++it) {
+    if (it->second) {
+      delete it->second;
+      it->second = nullptr;
+    }
+  }
 }
 
-Parser* Generator::MakeParser() {
+Generator& Generator::make_usage(const char* first_line) {
+  if (current_subroutine.empty()) {
+    current_subroutine.assign(Subroutine::get_default_name());
+    add_subroutine(Subroutine::get_default_name());
+  }
+  get_subroutine()->set_first_line(first_line);
+  return *this;
+}
+
+Parser* Generator::make_parser() {
   if (parser_) delete parser_;
 
   parser_ = new Parser;
-  parser_->set_usage_chain(&chain_);
+  parser_->set_usage_subroutines(&subroutines_);
 
   return parser_;
 }
 
-std::ostream& operator<<(std::ostream& out, const Generator& generator) {
-  out << generator.first_line_ << std::endl;
-
-  auto begin = generator.chain_.begin();
-  auto end = generator.chain_.end();
-
-  std::vector<std::stringstream> row_list;
-  row_list.reserve(generator.chain_.size());
-
-  // build usage rows without description field,
-  // find the max-len row at the same time.
-  size_t max_len = 0;
-  std::for_each(begin, end, [&max_len, &row_list](const Generator::Row& row) {
-    std::stringstream ss;
-    ss << "  ";
-    if (!row.option_short.empty()) {
-      ss << "-" << row.option_short << " ";
-    }
-    if (!row.option_long.empty()) {
-      if (!row.option_short.empty())
-        ss << "[ --" << row.option_long << " ] ";
-      else
-        ss << "--" << row.option_long << " ";
-    }
-
-    if (row.require_value) {
-      ss << "arg ";
-      if (!row.default_value.empty()) {
-        ss << "= " << row.default_value << " ";
-      }
-    }
-
-    max_len = std::max(max_len, ss.str().size());
-    row_list.push_back(std::move(ss));
-  });
-
-  // show all rows and align description field
-  size_t row_count = generator.chain_.size();
-  for (size_t i = 0; i < row_count; ++i) {
-    std::string str_row(std::move(row_list[i].str()));
-    // print row without description
-    out << str_row;
-    // print spaces
-    size_t spaces = 0;
-    size_t len = str_row.size();
-    if (max_len > len) spaces = max_len - len;
-
-    while (spaces--) {
-      out << " ";
-    }
-    // print description
-    out << generator.chain_[i].description << std::endl;
+Generator& Generator::add_subroutine(const char* name) {
+  if (subroutines_.find(name) == subroutines_.end()) {
+    current_subroutine.assign(name);
+    Subroutine* routine = new Subroutine(current_subroutine.c_str(), "");
+    subroutines_.insert({current_subroutine, routine});
   }
+  return *this;
+}
 
+Generator& Generator::add_subroutine(const char* name,
+                                     const char* description) {
+  add_subroutine(name);
+  if (subroutines_.find(name) != subroutines_.end()) {
+    get_subroutine()->set_description(description);
+  }
+  return *this;
+}
+
+std::map<std::string, std::string> Generator::get_subroutine_list() {
+  std::map<std::string, std::string> kv;
+  for (auto pr : subroutines_) {
+    Subroutine* subroutine = pr.second;
+    if (subroutine->get_name() != Subroutine::get_default_name())
+      kv[subroutine->get_name()] = subroutine->get_description();
+  }
+  return std::move(kv);
+}
+
+std::ostream& operator<<(std::ostream& out, Generator& generator) {
+  for (auto pr : generator.subroutines_) {
+    Subroutine* subroutine = pr.second;
+    if (subroutine->get_name() != Subroutine::get_default_name()) {
+      out << subroutine->get_name() << "\t";
+    }
+    out << subroutine->get_description() << std::endl;
+    out << *subroutine;
+  }
   return out;
 }
 
@@ -90,13 +88,13 @@ bool Generator::add_usage_line(const char* option, const char* default_value,
     option_short.assign(std::move(option_str.substr(0, delimeter_pos)));
     option_long.assign(std::move(option_str.substr(delimeter_pos + 1)));
 
-    Generator::Row row;
-    row.option_short = option_short;
-    row.option_long = option_long;
-    row.default_value = std::string(default_value);
-    row.description = std::string(description);
+    Row row;
+    row.oshort(option_short);
+    row.olong(option_long);
+    row.value(default_value);
+    row.desc(description);
 
-    chain_.push_back(row);
+    get_subroutine()->add_usage_line(row);
     return true;
   }
   return false;

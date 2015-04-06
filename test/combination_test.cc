@@ -1,30 +1,31 @@
-#include <assert.h>
-#include <iostream>
+#include "gtest/gtest.h"
 #include "generator/generator.h"
 #include "parser/parser.h"
 
-using namespace std;
 using namespace program_options;
 
-int main() {
-  Generator generator;
-  generator.MakeUsage("Usage:")
-          ("h,help", "show this information")
-          ("a,alpha", "0", "alpha")
-          ("r,", "255", "color red")
-          ("g,green", "color green")
-          (",blue", "1", "color blue");
-  cout << generator;
+TEST(TestConbination, combination){
+  Generator gen;
+  gen.make_usage("Usage:").add_subroutine("make")
+    ("h,help", "show this information")
+    ("a,alpha", "0", "alpha")
+    ("r,", "255", "color red")
+    ("g,green", "color green")
+    (",blue", "1", "color blue");
+  std::cout << gen;
+  
+  Parser* parser = gen.make_parser();
+  parser->parse("path/to/this make -h -ra 10 --green=0");
+  
+  EXPECT_STREQ(parser->get_subroutine_name().c_str(), "make");
+  EXPECT_TRUE(parser->has("a"));
+  EXPECT_TRUE(parser->has("green"));
+  EXPECT_EQ(parser->has("a"), parser->has("alpha"));
+  EXPECT_EQ(parser->get("a")->as<int>(), 10);
+  EXPECT_EQ(parser->get("blue")->as<int>(), 1);
+}
 
-  Parser* parser = generator.MakeParser();
-  parser->parse("path/to/this -h -ra 10 --green=0");
-  parser->dump();
-
-  assert(parser->has("a"));
-  assert(parser->has("a") == parser->has("alpha"));
-  assert(parser->has("green"));
-  assert(parser->get("a")->as<int>() == 10);
-  assert(parser->get("blue")->as<int>() == 1);
-
-  return 0;
+int main(int argc, char* argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

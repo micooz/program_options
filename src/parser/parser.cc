@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "parser/parser.h"
 #include "parser/error.h"
 #include "parser/item.h"
@@ -13,7 +14,7 @@ ParseItem* Parser::get(const string& key) {
   return nullptr;
 }
 
-Parser::Parser() : chain_(nullptr), pr_(nullptr) {}
+Parser::Parser() : subroutines_(nullptr), pr_(nullptr) {}
 
 Parser::~Parser() { this->cleanup(); }
 
@@ -24,6 +25,18 @@ Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
   auto ibegin = args_.begin() + 1;  // ignore the first cmd name
   auto iend = args_.end();
   auto it = ibegin;
+
+  if (argc >= 2 && args_[1][0] != '-') {
+    // the second block may be a subroutine name
+    // e.g., ./exec pull --option
+    if (subroutines_ && (subroutines_->find(args_[1]) != subroutines_->end())) {
+      subroutine_name_ = args_[1];
+      it++;  // ignore the subroutine name
+    } else {
+      // subroutine_name_ = Subroutine::get_default_name();
+      subroutine_name_ = args_[1];
+    }
+  }
 
   string block;
   string previous(*ibegin);
@@ -41,6 +54,8 @@ Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
         if (block[0] == '-') {
           if (block[1] == '-') {
             throw ParseError("option '--' is incomplete");
+          } else if (block[1] == '=') {
+            throw ParseError("option '-=' is invalid");
           } else {
             // single option
             // e.g., ./exec -s
@@ -126,7 +141,7 @@ Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
     previous = block;
   }  // for
 
-  if (chain_) {
+  if (subroutines_) {
     this->set_addition();
   }
 
@@ -154,7 +169,7 @@ Parser::ParseResult* Parser::parse(const char* command_line) {
   size_t size = blocks.size();  // argc
   char** argv = new char* [size];
   i = 0;
-  std::for_each(blocks.begin(), blocks.end(), [&argv, &i](const string& b) {
+  std::for_each(blocks.begin(), blocks.end(), [argv, &i](const string& b) {
     argv[i++] = const_cast<char*>(b.c_str());
   });
   auto pr =
@@ -189,6 +204,9 @@ bool Parser::has(const char* key) {
 }
 
 bool Parser::has_or(std::initializer_list<const char*> options) {
+  if (options.size() == 0) {
+    return false;
+  }
   for (auto key : options) {
     if (this->has(key)) return true;
   }
@@ -196,6 +214,9 @@ bool Parser::has_or(std::initializer_list<const char*> options) {
 }
 
 bool Parser::has_and(std::initializer_list<const char*> options) {
+  if (options.size() == 0) {
+    return false;
+  }
   for (auto key : options) {
     if (!this->has(key)) return false;
   }
@@ -257,14 +278,14 @@ void Parser::cleanup() {
 }
 
 void Parser::set_addition() {
-  for (const Generator::Row& row : *chain_) {
+  for (const Row& row : *subroutines_->at(subroutine_name_)) {
     // assume both -o and --option are allowed,
     // but only provide -o,
     // then set the another --option.
     // vice versa.
-    const string& def = row.default_value;
-    const string& ops = row.option_short;
-    const string& opl = row.option_long;
+    const string& def = row.value();
+    const string& ops = row.oshort();
+    const string& opl = row.olong();
     ParseResult& pr = *pr_;
 
     bool has_short = this->has(ops.c_str());

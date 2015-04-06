@@ -11,6 +11,7 @@
 
 #include <initializer_list>
 #include <map>
+#include <stdarg.h>
 #include "generator/generator.h"
 #include "parser/item.h"
 
@@ -105,9 +106,12 @@ class Parser {
    */
   void dump();
 
-  inline void set_usage_chain(const std::vector<Generator::Row>* chain) {
-    chain_ = chain;
+  inline void set_usage_subroutines(
+      const Generator::SubroutineCollection* subroutines) {
+    subroutines_ = subroutines;
   }
+
+  inline std::string get_subroutine_name() const { return subroutine_name_; }
 
  private:
   bool init(const int argc, const char** argv);
@@ -116,11 +120,12 @@ class Parser {
 
   void set_addition();
 
-  const std::vector<Generator::Row>* chain_;
+  const Generator::SubroutineCollection* subroutines_;
+  std::string subroutine_name_;
   int argc_;
   ParameterList args_;
   ParseResult* pr_;
 };
 }
 
-#endif // PARSER_PARSER_H_
+#endif  // PARSER_PARSER_H_
