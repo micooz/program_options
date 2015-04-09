@@ -166,6 +166,24 @@ float position = parser->get("p")->as<float>();
 
 For more examples, check out `test/combination_test.cc`
 
+### Make a template
+
+The latest version of `ProgramOption` allows you to make an user-defined template for `Generator`:
+
+```cpp
+Generator generator;
+generator
+    .add_subroutine("sub")
+    .make_template("-% | --% %", {Row::kShort, Row::kLong, Row::kDescription})
+    ("h,help", "show help");
+std::cout << gen("sub");
+/*
+-h | --help show help
+*/
+```
+
+Note that template allows you to use your own style for outputing, but it will lose some features such as: **auto-align**, it isn't smart enough. The default output style is recommended.
+
 # TODOs
 
 Nothing to do at the moment. Waiting for your advice.
