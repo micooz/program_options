@@ -16,6 +16,10 @@ class Row {
  public:
   Row();
 
+  enum Field { kShort, kLong, kDefault, kDescription };
+  
+  typedef std::initializer_list<Field> Order;
+
   // getter
 
   inline std::string oshort() const { return option_short; }

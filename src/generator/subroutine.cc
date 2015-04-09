@@ -1,34 +1,30 @@
 #include "generator/subroutine.h"
 #include <algorithm>
 #include <iostream>
-#include <sstream>
 
 namespace program_options {
 
-Subroutine::Subroutine() : first_line_(nullptr) {}
+Subroutine::Subroutine() : first_line_("") {}
 
 Subroutine::Subroutine(const char* name, const char* description)
-    : first_line_(nullptr), description_(description), name_(name) {
+    : first_line_(""), description_(description), name_(name) {
   usages_.reserve(5);
 }
 
-void Subroutine::add_usage_line(const Row& row) {
-  usages_.push_back(row);
-}
-
-std::ostream& operator<<(std::ostream& out, Subroutine& subroutine) {
+void Subroutine::print_with_row(std::ostream& out) {
   // print the subroutine name and its description
-  //  out << subroutine.get_name() << "\t" << subroutine.get_description()
-  //      << std::endl;
-  if (subroutine.get_first_line()) {
+  if (strcmp(get_first_line(), "") != 0) {
     // print the first line
-    out << subroutine.get_first_line() << std::endl;
+    out << get_first_line();
+    if (!usages_.empty()) {
+      out << std::endl;
+    }
   }
-  auto begin = subroutine.begin();
-  auto end = subroutine.end();
+  auto begin = usages_.begin();
+  auto end = usages_.end();
 
   std::vector<std::stringstream> row_list;
-  row_list.reserve(subroutine.size());
+  row_list.reserve(usages_.size());
 
   // build usage rows without description field,
   // find the max-len row at the same time.
@@ -58,7 +54,7 @@ std::ostream& operator<<(std::ostream& out, Subroutine& subroutine) {
   });
 
   // show all rows and align description field
-  size_t row_count = subroutine.size();
+  size_t row_count = usages_.size();
   for (size_t i = 0; i < row_count; ++i) {
     std::string str_row(std::move(row_list[i].str()));
     // print row without description
@@ -72,10 +68,46 @@ std::ostream& operator<<(std::ostream& out, Subroutine& subroutine) {
       out << " ";
     }
     // print description
-    out << subroutine.at(i).desc() << std::endl;
+    out << usages_.at(i).desc() << std::endl;
   }
-  out << std::endl;
+}
 
+void Subroutine::print_with_template(std::ostream& out) {
+  for (auto usage : usages_) {
+    size_t i = 0;
+    for (auto t = template_str_.begin(); t != template_str_.end(); ++t) {
+      if (*t == '%') {
+        switch (*(order_.begin() + i)) {
+          case Row::kShort:
+            out << usage.oshort();
+            break;
+          case Row::kLong:
+            out << usage.olong();
+            break;
+          case Row::kDefault:
+            out << usage.value();
+            break;
+          case Row::kDescription:
+            out << usage.desc();
+            break;
+          default:
+            break;
+        }
+        ++i;
+      } else {
+        out << *t;
+      }  // if %
+    }    // for template_str_
+    out << std::endl;
+  }  // for usages_
+}
+
+std::ostream& operator<<(std::ostream& out, Subroutine& subroutine) {
+  if (subroutine.template_str_.empty()) {
+    subroutine.print_with_row(out);
+  } else {
+    subroutine.print_with_template(out);
+  }
   return out;
 }
 }

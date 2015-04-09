@@ -6,13 +6,20 @@ using namespace program_options;
 
 TEST(TestConbination, combination){
   Generator gen;
-  gen.make_usage("Usage:").add_subroutine("make")
+  gen.make_usage("Usage:")
+     .add_subroutine("make")
     ("h,help", "show this information")
     ("a,alpha", "0", "alpha")
     ("r,", "255", "color red")
     ("g,green", "color green")
     (",blue", "1", "color blue");
-  std::cout << gen;
+  EXPECT_STREQ(gen("make").to_string().c_str(), "  -h [ --help ]          show this information\n  -a [ --alpha ] arg = 0 alpha\n  -r arg = 255           color red\n  -g [ --green ]         color green\n  --blue arg = 1         color blue\n");
+  
+  gen.add_subroutine("create").make_template("-% --%  %",
+                                             {Row::kShort, Row::kLong, Row::kDescription})
+      ("h,help", "show this information")
+      ("n,name", "", "name you want to create");
+  EXPECT_STREQ(gen("create").to_string().c_str(), "-h --help  show this information\n-n --name  name you want to create\n");
   
   Parser* parser = gen.make_parser();
   parser->parse("path/to/this make -h -ra 10 --green=0");

@@ -12,6 +12,8 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <sstream>
+#include <vector>
 #include "subroutine.h"
 
 namespace program_options {
@@ -42,6 +44,13 @@ class Generator {
   // get pairs of subroutine name and its description.
   std::map<std::string, std::string> get_subroutine_list();
 
+  // generate and return the result as std::string
+  inline std::string to_string() {
+    std::stringstream ss;
+    ss << *this;
+    return std::move(ss.str());
+  }
+
   // add an usage line, it doesn't require a value
   inline Generator& operator()(const char* option, const char* description) {
     this->add_usage_line(option, "", description);
@@ -62,11 +71,17 @@ class Generator {
     return *subroutines_.at(name);
   }
 
+  inline Generator& make_template(const char* template_str,
+                                  const Row::Order& order) {
+    get_subroutine()->set_template(template_str, order);
+    return *this;
+  }
+
   inline size_t get_subroutines_num() const { return subroutines_.size(); }
 
  private:
   inline Subroutine* get_subroutine() {
-    return subroutines_.at(current_subroutine);
+    return subroutines_.at(current_subroutine_);
   }
 
   friend std::ostream& operator<<(std::ostream& out, Generator& generator);
@@ -78,7 +93,7 @@ class Generator {
 
   const char kDelimeter = ',';
   SubroutineCollection subroutines_;
-  std::string current_subroutine;
+  std::string current_subroutine_;
   Parser* parser_;
 };
 }
