@@ -87,11 +87,11 @@ class Generator {
   friend std::ostream& operator<<(std::ostream& out, Generator& generator);
 
   // add a usage line.
-  // if delimeter doesn't exist, return false
+  // if delimiter doesn't exist, return false
   bool add_usage_line(const char* option, const char* default_value,
                       const char* description);
 
-  const char kDelimeter = ',';
+  const char kDelimiter = ',';
   SubroutineCollection subroutines_;
   std::string current_subroutine_;
   Parser* parser_;

@@ -62,14 +62,14 @@ std::map<std::string, std::string> Generator::get_subroutine_list() {
 bool Generator::add_usage_line(const char* option, const char* default_value,
                                const char* description) {
   std::string option_str(option);
-  auto delimeter_pos = option_str.find(kDelimeter);
+  auto delimiter_pos = option_str.find(kDelimiter);
 
   std::string option_short;
   std::string option_long;
 
-  if (delimeter_pos != std::string::npos) {
-    option_short.assign(std::move(option_str.substr(0, delimeter_pos)));
-    option_long.assign(std::move(option_str.substr(delimeter_pos + 1)));
+  if (delimiter_pos != std::string::npos) {
+    option_short.assign(std::move(option_str.substr(0, delimiter_pos)));
+    option_long.assign(std::move(option_str.substr(delimiter_pos + 1)));
 
     Row row;
     row.oshort(option_short);
