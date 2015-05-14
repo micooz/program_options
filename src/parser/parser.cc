@@ -1,7 +1,6 @@
 #include <algorithm>
 #include "parser/parser.h"
 #include "parser/error.h"
-#include "parser/item.h"
 
 using namespace std;
 
@@ -14,7 +13,8 @@ ParseItem* Parser::get(const string& key) {
   return nullptr;
 }
 
-Parser::Parser() : subroutines_(nullptr), pr_(nullptr) {}
+Parser::Parser()
+        : subroutines_(nullptr), pr_(nullptr) { }
 
 Parser::~Parser() { this->cleanup(); }
 
@@ -113,7 +113,7 @@ Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
     }  // switch
 
     if (block[0] != '-' && previous != block  // not the first option
-        ) {
+            ) {
       if (previous[0] != '-') {
         // previous is not an option, error occur
         // e.g., ./exec abc def
@@ -173,7 +173,8 @@ Parser::ParseResult* Parser::parse(const char* command_line) {
     argv[i++] = const_cast<char*>(b.c_str());
   });
   auto pr =
-      this->parse(static_cast<const int>(size), const_cast<const char**>(argv));
+          this->parse(static_cast<const int>(size),
+                      const_cast<const char**>(argv));
 
   delete[] argv;
   argv = nullptr;
@@ -221,25 +222,6 @@ bool Parser::has_and(std::initializer_list<const char*> options) {
     if (!this->has(key)) return false;
   }
   return true;
-}
-
-void Parser::dump() {
-  if (pr_) {
-    // print command line
-    for (int i = 0; i < argc_; ++i) {
-      cout << args_[i] << " ";
-    }
-    cout << endl;
-    // print map
-    for (auto pair : *pr_) {
-      cout << pair.first;
-      if (pair.second) {
-        cout << " = " << pair.second->val() << endl;
-      } else {
-        cout << " set" << endl;
-      }
-    }
-  }
 }
 
 bool Parser::init(const int argc, const char** argv) {

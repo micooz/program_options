@@ -77,8 +77,6 @@ class Generator {
     return *this;
   }
 
-  inline size_t get_subroutines_num() const { return subroutines_.size(); }
-
  private:
   inline Subroutine* get_subroutine() {
     return subroutines_.at(current_subroutine_);

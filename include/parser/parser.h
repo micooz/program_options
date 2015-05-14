@@ -101,11 +101,6 @@ class Parser {
    */
   ParseItem* get(const std::string& key);
 
-  /*
-   * print all ParseResult
-   */
-  void dump();
-
   inline void set_usage_subroutines(
       const Generator::SubroutineCollection* subroutines) {
     subroutines_ = subroutines;
