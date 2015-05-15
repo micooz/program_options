@@ -19,8 +19,8 @@ set(SOURCE_FILES
 add_library(program_options STATIC ${SOURCE_FILES})
 
 # gtest
-add_subdirectory(gtest-1.7.0/)
-include_directories(gtest-1.7.0/include/)
+add_subdirectory(googletest)
+include_directories(googletest/include/)
 enable_testing()
 
 # create executables linked with libparser.a
