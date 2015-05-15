@@ -33,9 +33,12 @@ Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
       subroutine_name_ = args_[1];
       it++;  // ignore the subroutine name
     } else {
-      // subroutine_name_ = Subroutine::get_default_name();
       subroutine_name_ = args_[1];
     }
+  } else {
+    // there is no options as well as subroutine name
+    // e.g., ./exec
+    subroutine_name_ = Subroutine::get_default_name();
   }
 
   string block;
@@ -260,7 +263,7 @@ void Parser::cleanup() {
 }
 
 void Parser::set_addition() {
-  for (const Row& row : *subroutines_->at(subroutine_name_)) {
+  for (const Row& row : *(subroutines_->at(subroutine_name_))) {
     // assume both -o and --option are allowed,
     // but only provide -o,
     // then set the another --option.
