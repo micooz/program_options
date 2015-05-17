@@ -10,14 +10,14 @@ It's easy to check whether an option exist, and get value with a specified type.
 
 `ProgramOptions` includes two parts,
 
-* parser (parser/*)
-* usage generator (generator/*)
+* parser
+* usage generator
 
 both part can be simply used as following:
 
 ### parser
 
-1. Include the header 'parser/parser.h'.
+1. Include the header 'program_options/parser.h'.
 2. Note that `Parser` is in the `program_options` namespace.
 3. Declare an object associates with `Parser`.
 4. Then call Parser::parse() manually.
@@ -67,7 +67,7 @@ For more details and examples, check out `test/parser_test.cc`
 
 ### usage generator
 
-1. Include the header 'generator/generator.h'.
+1. Include the header 'program_options/generator.h'.
 2. Declare an object associate with Generator.
 3. Begin with `Generator::make_usage()`.
 4. Then just append parentheses and add your options and descriptions.
