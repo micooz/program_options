@@ -1,5 +1,5 @@
-#include "generator/generator.h"
-#include "parser/parser.h"
+#include "program_options/generator.h"
+#include "program_options/parser.h"
 
 namespace program_options {
 

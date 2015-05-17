@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
-#include "generator/generator.h"
-#include "parser/parser.h"
+#include "program_options.h"
 
 using namespace program_options;
 

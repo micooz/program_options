@@ -3,17 +3,10 @@ project(program_options)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-include_directories(include/)
+include_directories(include)
 
 # library sources
-set(SOURCE_FILES
-    src/parser/parser.cc
-    src/parser/error.cc
-    src/parser/item.cc
-    src/generator/generator.cc
-    src/generator/subroutine.cc
-    src/generator/row.cc
-)
+aux_source_directory(src/program_options SOURCE_FILES)
 
 # create a static link library
 add_library(program_options STATIC ${SOURCE_FILES})

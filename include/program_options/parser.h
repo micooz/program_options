@@ -12,8 +12,8 @@
 #include <initializer_list>
 #include <map>
 #include <stdarg.h>
-#include "generator/generator.h"
-#include "parser/item.h"
+#include "program_options/generator.h"
+#include "program_options/item.h"
 
 #ifdef __GNUC__
 #define DEPRECATED(func) func __attribute__((deprecated))
