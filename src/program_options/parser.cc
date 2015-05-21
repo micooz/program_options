@@ -263,54 +263,56 @@ void Parser::cleanup() {
 }
 
 void Parser::set_addition() {
-  for (const Row& row : *(subroutines_->at(subroutine_name_))) {
-    // assume both -o and --option are allowed,
-    // but only provide -o,
-    // then set the another --option.
-    // vice versa.
-    const string& def = row.value();
-    const string& ops = row.oshort();
-    const string& opl = row.olong();
-    ParseResult& pr = *pr_;
+  if (subroutines_->find(subroutine_name_) != subroutines_->end()) {
+    for (const Row& row : *(subroutines_->at(subroutine_name_))) {
+      // assume both -o and --option are allowed,
+      // but only provide -o,
+      // then set the another --option.
+      // vice versa.
+      const string& def = row.value();
+      const string& ops = row.oshort();
+      const string& opl = row.olong();
+      ParseResult& pr = *pr_;
 
-    bool has_short = this->has(ops.c_str());
-    bool has_long = this->has(opl.c_str());
+      bool has_short = this->has(ops.c_str());
+      bool has_long = this->has(opl.c_str());
 
-    // assume -o [ --option ] arg = 1
-    // but not provide option value,
-    // then set to default 1.
-    // otherwise, both set to user defined value
+      // assume -o [ --option ] arg = 1
+      // but not provide option value,
+      // then set to default 1.
+      // otherwise, both set to user defined value
 
-    if (!ops.empty()) {
-      if (has_short) {
-        if (pr[ops] != nullptr && !opl.empty()) {
-          pr[opl] = new ParseItem(std::move(pr[ops]->val()));
-        } else if (pr[ops] == nullptr && !def.empty()) {
-          pr[ops] = new ParseItem(std::move(def));
-          if (!opl.empty()) pr[opl] = new ParseItem(std::move(def));
-        } else {
-          pr[opl] = nullptr;
+      if (!ops.empty()) {
+        if (has_short) {
+          if (pr[ops] != nullptr && !opl.empty()) {
+            pr[opl] = new ParseItem(std::move(pr[ops]->val()));
+          } else if (pr[ops] == nullptr && !def.empty()) {
+            pr[ops] = new ParseItem(std::move(def));
+            if (!opl.empty()) pr[opl] = new ParseItem(std::move(def));
+          } else {
+            pr[opl] = nullptr;
+          }
         }
       }
-    }
 
-    if (!opl.empty()) {
-      if (has_long) {
-        if (pr[opl] != nullptr && !ops.empty()) {
-          pr[ops] = new ParseItem(std::move(pr[opl]->val()));
-        } else if (pr[opl] == nullptr && !def.empty()) {
-          if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
-          pr[opl] = new ParseItem(std::move(def));
-        } else {
-          pr[ops] = nullptr;
+      if (!opl.empty()) {
+        if (has_long) {
+          if (pr[opl] != nullptr && !ops.empty()) {
+            pr[ops] = new ParseItem(std::move(pr[opl]->val()));
+          } else if (pr[opl] == nullptr && !def.empty()) {
+            if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
+            pr[opl] = new ParseItem(std::move(def));
+          } else {
+            pr[ops] = nullptr;
+          }
         }
       }
-    }
 
-    if (!has_long && !has_short && !def.empty()) {
-      if (!opl.empty()) pr[opl] = new ParseItem(std::move(def));
-      if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
-    }
-  }  // for
+      if (!has_long && !has_short && !def.empty()) {
+        if (!opl.empty()) pr[opl] = new ParseItem(std::move(def));
+        if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
+      }
+    }  // for
+  }  // if
 }
 }
