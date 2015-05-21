@@ -68,6 +68,7 @@ class Generator {
   // this method is for subroutine usage printing.
   // e.g., cout << generator("subroutine_name");
   inline Subroutine& operator()(const char* name) {
+    assert(subroutines_.find(name) != subroutines_.end());
     return *subroutines_.at(name);
   }
 
