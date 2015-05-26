@@ -1,5 +1,6 @@
 #include "program_options/subroutine.h"
 #include <algorithm>
+#include <cstring>
 #include <iostream>
 
 namespace program_options {
