@@ -4,10 +4,11 @@
 
 namespace program_options {
 
-Subroutine::Subroutine() : first_line_("") {}
+Subroutine::Subroutine()
+        : first_line_("") { }
 
 Subroutine::Subroutine(const char* name, const char* description)
-    : first_line_(""), description_(description), name_(name) {
+        : first_line_(""), description_(description), name_(name) {
   usages_.reserve(5);
 }
 
@@ -23,7 +24,7 @@ void Subroutine::print_with_row(std::ostream& out) {
   auto begin = usages_.begin();
   auto end = usages_.end();
 
-  std::vector<std::stringstream> row_list;
+  std::vector<std::string> row_list;
   row_list.reserve(usages_.size());
 
   // build usage rows without description field,
@@ -50,13 +51,13 @@ void Subroutine::print_with_row(std::ostream& out) {
     }
 
     max_len = std::max(max_len, ss.str().size());
-    row_list.push_back(std::move(ss));
+    row_list.push_back(std::move(ss.str()));
   });
 
   // show all rows and align description field
   size_t row_count = usages_.size();
   for (size_t i = 0; i < row_count; ++i) {
-    std::string str_row(std::move(row_list[i].str()));
+    std::string str_row(std::move(row_list[i]));
     // print row without description
     out << str_row;
     // print spaces

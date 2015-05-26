@@ -9,6 +9,7 @@
 #ifndef GENERATOR_GENERATOR_H_
 #define GENERATOR_GENERATOR_H_
 
+#include <cassert>
 #include <iostream>
 #include <map>
 #include <string>
