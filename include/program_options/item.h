@@ -20,7 +20,7 @@ class ParseItem {
   /*
    * dynamic type cast, support base data types including std::string
    */
-  template <typename T>
+  template<typename T>
   T as() {
     T r;
     std::stringstream buf;
@@ -33,6 +33,11 @@ class ParseItem {
    * alias of as<std::string>()
    */
   inline std::string val() const { return value_; }
+
+  /*
+   * returns c-style string, will be useful if you want a const char*
+   */
+  inline const char* c_str() const { return value_.c_str(); }
 
  private:
   std::string value_;
