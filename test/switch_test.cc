@@ -1,4 +1,5 @@
 #include "program_options/switch.hpp"
+#include <string>
 
 using namespace program_options;
 
@@ -6,7 +7,7 @@ class User {
  public:
   explicit User(int age) : age_(age) {}
 
-  bool operator<(const User& user) { return this->age_ < user.age(); }
+  bool operator<(const User& user) const { return this->age_ < user.age(); }
 
   int age() const { return age_; }
 
