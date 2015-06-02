@@ -5,11 +5,10 @@
 
 namespace program_options {
 
-Subroutine::Subroutine()
-        : first_line_("") { }
+Subroutine::Subroutine() : first_line_("") {}
 
 Subroutine::Subroutine(const char* name, const char* description)
-        : first_line_(""), description_(description), name_(name) {
+    : first_line_(""), description_(description), name_(name) {
   usages_.reserve(5);
 }
 

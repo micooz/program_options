@@ -13,8 +13,7 @@ ParseItem* Parser::get(const string& key) {
   return nullptr;
 }
 
-Parser::Parser()
-        : subroutines_(nullptr), pr_(nullptr) { }
+Parser::Parser() : subroutines_(nullptr), pr_(nullptr) {}
 
 Parser::~Parser() { this->cleanup(); }
 
@@ -116,7 +115,7 @@ Parser::ParseResult* Parser::parse(const int argc, const char** argv) {
     }  // switch
 
     if (block[0] != '-' && previous != block  // not the first option
-            ) {
+        ) {
       if (previous[0] != '-') {
         // previous is not an option, error occur
         // e.g., ./exec abc def
@@ -176,8 +175,7 @@ Parser::ParseResult* Parser::parse(const char* command_line) {
     argv[i++] = const_cast<char*>(b.c_str());
   });
   auto pr =
-          this->parse(static_cast<const int>(size),
-                      const_cast<const char**>(argv));
+      this->parse(static_cast<const int>(size), const_cast<const char**>(argv));
 
   delete[] argv;
   argv = nullptr;
@@ -313,6 +311,6 @@ void Parser::set_addition() {
         if (!ops.empty()) pr[ops] = new ParseItem(std::move(def));
       }
     }  // for
-  }  // if
+  }    // if
 }
 }

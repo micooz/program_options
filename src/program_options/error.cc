@@ -11,5 +11,4 @@ const char* ParseError::what() const throw() {
 }
 
 ParseError::~ParseError() throw() {}
-
 }
